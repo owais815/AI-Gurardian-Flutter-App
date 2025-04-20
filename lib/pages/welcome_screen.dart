@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:parental_control/pages/my_family_screen.dart';
 
 class WelcomeScreen extends StatelessWidget {
   final String userName;
@@ -50,8 +51,14 @@ class WelcomeScreen extends StatelessWidget {
                   width: double.infinity,
                   child: ElevatedButton(
                     onPressed: () {
-                      // Navigate to dashboard or home screen
+                      Navigator.pushReplacement(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => const MyFamilyScreen(),
+                        ),
+                      );
                     },
+
                     style: ElevatedButton.styleFrom(
                       padding: const EdgeInsets.symmetric(vertical: 16),
                       backgroundColor: Color(0xFF4C5DF4),

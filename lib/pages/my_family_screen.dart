@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:parental_control/pages/add_child.dart';
 
 class MyFamilyScreen extends StatelessWidget {
   const MyFamilyScreen({super.key});
@@ -10,18 +11,13 @@ class MyFamilyScreen extends StatelessWidget {
         // optional sidebar
         child: ListView(
           children: const [
-            DrawerHeader(
-              child: Text("Menu"),
-            ),
+            DrawerHeader(child: Text("Menu")),
             ListTile(title: Text("Settings")),
           ],
         ),
       ),
       appBar: AppBar(
-        title: const Text(
-          "My family",
-          style: TextStyle(color: Colors.black),
-        ),
+        title: const Text("My family", style: TextStyle(color: Colors.black)),
         backgroundColor: Colors.white,
         elevation: 0,
         iconTheme: const IconThemeData(color: Colors.black),
@@ -45,7 +41,7 @@ class MyFamilyScreen extends StatelessWidget {
                       fontWeight: FontWeight.bold,
                       decoration: TextDecoration.underline,
                     ),
-                  )
+                  ),
                 ],
               ),
             ),
@@ -56,7 +52,7 @@ class MyFamilyScreen extends StatelessWidget {
           // Illustration
           Center(
             child: Image.asset(
-              'assets/images/family.png', // replace with actual image
+              'assets/images/aiGuardianLogo.png', // replace with actual image
               height: 180,
             ),
           ),
@@ -79,7 +75,12 @@ class MyFamilyScreen extends StatelessWidget {
               width: double.infinity,
               child: ElevatedButton(
                 onPressed: () {
-                  // Next screen logic
+                  Navigator.pushReplacement(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => const AddChildScreen(),
+                    ),
+                  );
                 },
                 style: ElevatedButton.styleFrom(
                   backgroundColor: const Color(0xFF4C5DF4),
@@ -90,11 +91,11 @@ class MyFamilyScreen extends StatelessWidget {
                 ),
                 child: const Text(
                   "Start now",
-                  style: TextStyle(fontSize: 16),
+                  style: TextStyle(fontSize: 16, color: Colors.white),
                 ),
               ),
             ),
-          )
+          ),
         ],
       ),
     );
