@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:parental_control/pages/homepage.dart';
+import 'package:parental_control/pages/signup.dart';
 
 class Signin extends StatefulWidget {
   const Signin({super.key});
@@ -197,7 +198,14 @@ class _SigninState extends State<Signin> {
                         style: TextStyle(color: Colors.grey[600]),
                       ),
                       TextButton(
-                        onPressed: () {},
+                        onPressed: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => const Signup(),
+                            ),
+                          );
+                        },
                         child: const Text('Sign Up'),
                       ),
                     ],
