@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:parental_control/pages/device_selection_screen.dart';
 
 class AddChildScreen extends StatefulWidget {
   const AddChildScreen({super.key});
@@ -159,20 +160,33 @@ class _AddChildScreenState extends State<AddChildScreen> {
                       _isFormComplete
                           ? () {
                             if (_formKey.currentState!.validate()) {
-                              // Proceed to next screen or save data
-                              print('Child Name: $_childName');
-                              print('Gender: $_selectedGender');
-                              print('Year: $_selectedYear');
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder:
+                                      (context) => DeviceSelectionScreen(
+                                        childName: _childName,
+                                      ),
+                                ),
+                              );
+                              // print('Child Name: $_childName');
+                              // print('Gender: $_selectedGender');
+                              // print('Year: $_selectedYear');
                             }
                           }
                           : null, // Disabled if form is incomplete
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.deepPurple.shade100,
+                    backgroundColor:
+                        _isFormComplete
+                            ? Colors
+                                .deepPurple // Enabled color
+                            : Colors.deepPurple.shade100, // Disabled color
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(10),
                     ),
                     padding: const EdgeInsets.symmetric(vertical: 16),
                   ),
+
                   child: const Text(
                     'Next ➔',
                     style: TextStyle(fontSize: 16, color: Colors.white),
