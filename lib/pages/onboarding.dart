@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'signup.dart'; // Ensure this import points to your Signup screen
+import 'signin.dart'; // Ensure this import points to your Signin screen
 
 class OnboardingScreen extends StatelessWidget {
   const OnboardingScreen({super.key});
@@ -26,11 +28,8 @@ class OnboardingScreen extends StatelessWidget {
 
                 const SizedBox(height: 30),
 
-                // Illustration (Replace with your own asset if needed)
-                Image.asset(
-                  'assets/images/parenting.png', // Add image in assets
-                  height: 200,
-                ),
+                // Illustration
+                Image.asset('assets/images/logo.png', height: 200),
 
                 const SizedBox(height: 30),
 
@@ -38,10 +37,7 @@ class OnboardingScreen extends StatelessWidget {
                 const Text(
                   "Digital parenting made easy",
                   textAlign: TextAlign.center,
-                  style: TextStyle(
-                    fontSize: 24,
-                    fontWeight: FontWeight.bold,
-                  ),
+                  style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
                 ),
 
                 const SizedBox(height: 10),
@@ -60,11 +56,14 @@ class OnboardingScreen extends StatelessWidget {
                   width: double.infinity,
                   child: ElevatedButton(
                     onPressed: () {
-                      // Navigate to sign up / home screen
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (context) => const Signup()),
+                      );
                     },
                     style: ElevatedButton.styleFrom(
                       padding: const EdgeInsets.symmetric(vertical: 16),
-                      backgroundColor: Color(0xFF4C5DF4), // Indigo blue
+                      backgroundColor: const Color(0xFF4C5DF4),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(12),
                       ),
@@ -85,7 +84,12 @@ class OnboardingScreen extends StatelessWidget {
                     const Text("Already have an account? "),
                     GestureDetector(
                       onTap: () {
-                        // Navigate to login screen
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => const Signin(),
+                          ),
+                        );
                       },
                       child: const Text(
                         "Log in",
@@ -94,9 +98,9 @@ class OnboardingScreen extends StatelessWidget {
                           fontWeight: FontWeight.bold,
                         ),
                       ),
-                    )
+                    ),
                   ],
-                )
+                ),
               ],
             ),
           ),
