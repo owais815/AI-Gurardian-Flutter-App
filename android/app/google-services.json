@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "1014635301514",
+    "project_id": "parental-control-51509",
+    "storage_bucket": "parental-control-51509.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1014635301514:android:59baa6d64cc4043ffa7b73",
+        "android_client_info": {
+          "package_name": "com.example.parental_control"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyB1LMq9gzNHRUF8sEZLfEQhaVJEASQH0Z0"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
