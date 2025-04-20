@@ -18,7 +18,7 @@ class WelcomeScreen extends StatelessWidget {
               children: [
                 // Illustration
                 Image.asset(
-                  'assets/images/welcome.png', // Add image to assets
+                  'assets/images/aiGuardianLogo.png', // Add image to assets
                   height: 200,
                 ),
 
@@ -61,7 +61,7 @@ class WelcomeScreen extends StatelessWidget {
                     ),
                     child: const Text(
                       "Confirm",
-                      style: TextStyle(fontSize: 16),
+                      style: TextStyle(fontSize: 16, color: Colors.white),
                     ),
                   ),
                 ),
@@ -69,10 +69,12 @@ class WelcomeScreen extends StatelessWidget {
                 const SizedBox(height: 20),
 
                 // Alternative link
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
+                Column(
                   children: [
-                    const Text("Not what you were expecting? "),
+                    const Text(
+                      "Not what you were expecting?",
+                      textAlign: TextAlign.center,
+                    ),
                     GestureDetector(
                       onTap: () {
                         // Navigate to Kids App or show info
@@ -84,9 +86,9 @@ class WelcomeScreen extends StatelessWidget {
                           fontWeight: FontWeight.bold,
                         ),
                       ),
-                    )
+                    ),
                   ],
-                )
+                ),
               ],
             ),
           ),

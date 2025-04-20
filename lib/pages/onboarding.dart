@@ -18,18 +18,18 @@ class OnboardingScreen extends StatelessWidget {
               children: [
                 // Logo
                 Text(
-                  "Qustodio",
+                  "AI Guardian",
                   style: TextStyle(
-                    fontSize: 28,
+                    fontSize: 30,
                     fontWeight: FontWeight.bold,
-                    color: Colors.green[600],
+                    color: Color(0xFF4C5DF4),
                   ),
                 ),
 
                 const SizedBox(height: 30),
 
                 // Illustration
-                Image.asset('assets/images/logo.png', height: 200),
+                Image.asset('assets/images/aiGuardianLogo.png', height: 200),
 
                 const SizedBox(height: 30),
 
@@ -70,7 +70,7 @@ class OnboardingScreen extends StatelessWidget {
                     ),
                     child: const Text(
                       "Get started",
-                      style: TextStyle(fontSize: 16),
+                      style: TextStyle(fontSize: 16, color: Colors.white),
                     ),
                   ),
                 ),

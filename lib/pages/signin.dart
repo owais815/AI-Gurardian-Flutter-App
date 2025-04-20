@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:parental_control/pages/homepage.dart';
 import 'package:parental_control/pages/signup.dart';
+import 'package:parental_control/pages/welcome_screen.dart';
 
 class Signin extends StatefulWidget {
   const Signin({super.key});
@@ -36,7 +37,12 @@ class _SigninState extends State<Signin> {
         );
         Navigator.pushReplacement(
           context,
-          MaterialPageRoute(builder: (context) => Homepage()),
+          MaterialPageRoute(
+            builder:
+                (context) => WelcomeScreen(
+                  userName: _emailController.text.split('@').first,
+                ),
+          ),
         );
       } on FirebaseAuthException catch (e) {
         String errorMessage = 'An error occurred. Please try again.';
