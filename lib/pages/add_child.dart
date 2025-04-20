@@ -1,5 +1,3 @@
-
-
 import 'package:flutter/material.dart';
 
 class AddChildScreen extends StatefulWidget {
@@ -17,13 +15,25 @@ class _AddChildScreenState extends State<AddChildScreen> {
   String? _selectedYear;
 
   final List<String> _genders = ['Boy', 'Girl'];
-  final List<String> _years = List.generate(25, (index) => (DateTime.now().year - index).toString());
+  final List<String> _years = List.generate(
+    25,
+    (index) => (DateTime.now().year - index).toString(),
+  );
+
+  bool get _isFormComplete =>
+      _childName.isNotEmpty &&
+      _selectedGender.isNotEmpty &&
+      _selectedYear != null;
+
+  void _onFormFieldChanged() {
+    setState(() {}); // Update UI to reflect changes
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        leading: BackButton(color: Colors.black),
+        leading: const BackButton(color: Colors.black),
         title: const Text('Add a child', style: TextStyle(color: Colors.black)),
         backgroundColor: Colors.white,
         elevation: 0,
@@ -36,21 +46,33 @@ class _AddChildScreenState extends State<AddChildScreen> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               const Spacer(flex: 1),
-              Center(child: Icon(Icons.edit, color: Colors.green, size: 30)),
+              const Center(
+                child: Icon(Icons.edit, color: Colors.green, size: 30),
+              ),
               const SizedBox(height: 30),
 
-              const Text('Name', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+              const Text(
+                'Name',
+                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+              ),
               const SizedBox(height: 8),
               TextFormField(
                 decoration: InputDecoration(
                   hintText: "Child's first name",
                   border: OutlineInputBorder(
-                    borderSide: BorderSide(color: Colors.deepPurple),
+                    borderSide: const BorderSide(color: Colors.deepPurple),
                     borderRadius: BorderRadius.circular(8),
                   ),
                 ),
-                onChanged: (val) => _childName = val,
-                validator: (val) => val == null || val.isEmpty ? 'Please enter a name' : null,
+                onChanged: (val) {
+                  _childName = val;
+                  _onFormFieldChanged();
+                },
+                validator:
+                    (val) =>
+                        val == null || val.isEmpty
+                            ? 'Please enter a name'
+                            : null,
               ),
 
               const SizedBox(height: 20),
@@ -61,24 +83,27 @@ class _AddChildScreenState extends State<AddChildScreen> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        const Text('Gender', style: TextStyle(fontWeight: FontWeight.bold)),
+                        const Text(
+                          'Gender',
+                          style: TextStyle(fontWeight: FontWeight.bold),
+                        ),
                         const SizedBox(height: 8),
                         DropdownButtonFormField<String>(
                           value: _selectedGender,
-                          items: _genders.map((gender) {
-                            return DropdownMenuItem(
-                              value: gender,
-                              child: Text(gender),
-                            );
-                          }).toList(),
+                          items:
+                              _genders.map((gender) {
+                                return DropdownMenuItem(
+                                  value: gender,
+                                  child: Text(gender),
+                                );
+                              }).toList(),
                           onChanged: (value) {
-                            setState(() {
-                              _selectedGender = value!;
-                            });
+                            _selectedGender = value!;
+                            _onFormFieldChanged();
                           },
                           decoration: InputDecoration(
                             border: OutlineInputBorder(
-                              borderSide: BorderSide(color: Colors.blue),
+                              borderSide: const BorderSide(color: Colors.blue),
                               borderRadius: BorderRadius.circular(8),
                             ),
                           ),
@@ -91,29 +116,33 @@ class _AddChildScreenState extends State<AddChildScreen> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        const Text('Birth year', style: TextStyle(fontWeight: FontWeight.bold)),
+                        const Text(
+                          'Birth year',
+                          style: TextStyle(fontWeight: FontWeight.bold),
+                        ),
                         const SizedBox(height: 8),
                         DropdownButtonFormField<String>(
                           value: _selectedYear,
                           hint: const Text('-'),
-                          items: _years.map((year) {
-                            return DropdownMenuItem(
-                              value: year,
-                              child: Text(year),
-                            );
-                          }).toList(),
+                          items:
+                              _years.map((year) {
+                                return DropdownMenuItem(
+                                  value: year,
+                                  child: Text(year),
+                                );
+                              }).toList(),
                           onChanged: (value) {
-                            setState(() {
-                              _selectedYear = value;
-                            });
+                            _selectedYear = value;
+                            _onFormFieldChanged();
                           },
                           decoration: InputDecoration(
                             border: OutlineInputBorder(
-                              borderSide: BorderSide(color: Colors.blue),
+                              borderSide: const BorderSide(color: Colors.blue),
                               borderRadius: BorderRadius.circular(8),
                             ),
                           ),
-                          validator: (val) => val == null ? 'Select year' : null,
+                          validator:
+                              (val) => val == null ? 'Select year' : null,
                         ),
                       ],
                     ),
@@ -126,20 +155,28 @@ class _AddChildScreenState extends State<AddChildScreen> {
               SizedBox(
                 width: double.infinity,
                 child: ElevatedButton(
-                  onPressed: () {
-                    if (_formKey.currentState!.validate()) {
-                      // Proceed to next screen or save data
-                      print('Child Name: $_childName');
-                      print('Gender: $_selectedGender');
-                      print('Year: $_selectedYear');
-                    }
-                  },
+                  onPressed:
+                      _isFormComplete
+                          ? () {
+                            if (_formKey.currentState!.validate()) {
+                              // Proceed to next screen or save data
+                              print('Child Name: $_childName');
+                              print('Gender: $_selectedGender');
+                              print('Year: $_selectedYear');
+                            }
+                          }
+                          : null, // Disabled if form is incomplete
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Colors.deepPurple.shade100,
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(10),
+                    ),
                     padding: const EdgeInsets.symmetric(vertical: 16),
                   ),
-                  child: const Text('Next ➔', style: TextStyle(fontSize: 16, color: Colors.white)),
+                  child: const Text(
+                    'Next ➔',
+                    style: TextStyle(fontSize: 16, color: Colors.white),
+                  ),
                 ),
               ),
             ],
