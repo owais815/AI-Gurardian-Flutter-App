@@ -65,7 +65,7 @@ class MyFamilyScreen extends StatelessWidget {
 
           // Text
           const Text(
-            "Protect your first child’s device with Qustodio!",
+            "Protect your first child’s device with AI Guardian!",
             textAlign: TextAlign.center,
             style: TextStyle(fontSize: 16, color: Colors.black87),
           ),
