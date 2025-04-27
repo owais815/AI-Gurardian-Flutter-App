@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:parental_control/pages/my_family_screen.dart';
+import 'package:ai_guardian_parent/pages/my_family_screen.dart';
 
 class WelcomeScreen extends StatelessWidget {
   final String userName;

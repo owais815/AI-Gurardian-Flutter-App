@@ -1,8 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:parental_control/pages/homepage.dart';
-import 'package:parental_control/pages/signup.dart';
-import 'package:parental_control/pages/welcome_screen.dart';
+import 'package:ai_guardian_parent/pages/signup.dart';
+import 'package:ai_guardian_parent/pages/welcome_screen.dart';
 
 class Signin extends StatefulWidget {
   const Signin({super.key});

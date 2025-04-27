@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:parental_control/pages/device_selection_screen.dart';
+import 'package:ai_guardian_parent/pages/device_selection_screen.dart';
 
 class AddChildScreen extends StatefulWidget {
   const AddChildScreen({super.key});

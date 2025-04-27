@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:parental_control/pages/add_child.dart';
+import 'package:ai_guardian_parent/pages/add_child.dart';
 
 class DeviceSelectionScreen extends StatefulWidget {
   final String childName;
