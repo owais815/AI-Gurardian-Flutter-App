@@ -2,14 +2,14 @@ plugins {
     id("com.android.application")
     id("kotlin-android")
     id("dev.flutter.flutter-gradle-plugin")
-    id("com.google.gms.google-services") version "4.4.2" 
+    id("com.google.gms.google-services") version "4.4.2"
 }
 dependencies {
   implementation(platform("com.google.firebase:firebase-bom:33.10.0"))
 }
 
 android {
-    namespace = "com.example.parental_control"
+    namespace = "com.example.ai_guardian_parent"
     compileSdk = flutter.compileSdkVersion
     ndkVersion = "27.0.12077973"
     compileOptions {
@@ -22,7 +22,7 @@ android {
     }
 
     defaultConfig {
-        applicationId = "com.example.parental_control"
+        applicationId = "com.example.ai_guardian_parent"
         minSdk = 23
         targetSdk = 33
         versionCode = 1
