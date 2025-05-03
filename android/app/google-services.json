@@ -1,21 +1,21 @@
 {
   "project_info": {
-    "project_number": "1014635301514",
-    "project_id": "parental-control-51509",
-    "storage_bucket": "parental-control-51509.firebasestorage.app"
+    "project_number": "1052313028620",
+    "project_id": "ai-guardian-35c3a",
+    "storage_bucket": "ai-guardian-35c3a.firebasestorage.app"
   },
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:1014635301514:android:59baa6d64cc4043ffa7b73",
+        "mobilesdk_app_id": "1:1052313028620:android:cb2aa733f13b9bc84b8629",
         "android_client_info": {
-          "package_name": "com.example.ai_guardian_parent"
+          "package_name": "ai_guardian.parent"
         }
       },
       "oauth_client": [],
       "api_key": [
         {
-          "current_key": "AIzaSyB1LMq9gzNHRUF8sEZLfEQhaVJEASQH0Z0"
+          "current_key": "AIzaSyCWNKjEcFCc4DOr3zoE0uhSqs9FBUfqL5s"
         }
       ],
       "services": {
