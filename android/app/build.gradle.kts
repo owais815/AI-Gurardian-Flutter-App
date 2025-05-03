@@ -9,7 +9,7 @@ dependencies {
 }
 
 android {
-    namespace = "com.example.ai_guardian_parent"
+    namespace = "ai_guardian.parent"
     compileSdk = flutter.compileSdkVersion
     ndkVersion = "27.0.12077973"
     compileOptions {
@@ -22,7 +22,7 @@ android {
     }
 
     defaultConfig {
-        applicationId = "com.example.ai_guardian_parent"
+        applicationId = "ai_guardian.parent"
         minSdk = 23
         targetSdk = 33
         versionCode = 1

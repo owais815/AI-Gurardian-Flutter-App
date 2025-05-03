@@ -1,4 +1,4 @@
-package com.example.ai_guardian_parent
+package ai_guardian.parent
 
 import io.flutter.embedding.android.FlutterActivity
 
