@@ -1,3 +1,5 @@
+import 'package:ai_guardian_parent/pages/link_options_screen.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:ai_guardian_parent/pages/add_child.dart';
 
@@ -149,9 +151,27 @@ class _DeviceSelectionScreenState extends State<DeviceSelectionScreen> {
                       children: [
                         ElevatedButton.icon(
                           onPressed: () {
-                            // TODO: Navigate to QR Code screen with parent UID
-                            // Navigator.push(context, MaterialPageRoute(builder: (_) => QRCodeScreen(parentUID)));
+                            final parentUID =
+                                FirebaseAuth.instance.currentUser?.uid;
+                            if (parentUID != null) {
+                              print("Parent UID: $parentUID");
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder:
+                                      (_) => LinkOptionsScreen(
+                                        parentUID: parentUID,
+                                      ),
+                                ),
+                              );
+                            } else {
+                              // Optional: handle case when user is not logged in
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(content: Text("Error: Not logged in")),
+                              );
+                            }
                           },
+
                           icon: const Icon(Icons.qr_code),
                           label: const Text('QR Code'),
                           style: ElevatedButton.styleFrom(
