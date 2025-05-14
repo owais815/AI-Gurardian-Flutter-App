@@ -1,3 +1,4 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:ai_guardian_parent/pages/signin.dart';
@@ -29,16 +30,28 @@ class _SignupState extends State<Signup> {
 
     setState(() => _isLoading = true);
     try {
-      await FirebaseAuth.instance.createUserWithEmailAndPassword(
-        email: _emailController.text.trim(),
-        password: _passwordController.text.trim(),
-      );
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(const SnackBar(content: Text('Signup successful!')));
-      Navigator.of(context).pushReplacement(
-        MaterialPageRoute(builder: (context) => const Signin()),
-      );
+      final UserCredential userCredential = await FirebaseAuth.instance
+          .createUserWithEmailAndPassword(
+            email: _emailController.text.trim(),
+            password: _passwordController.text.trim(),
+          );
+
+      final user = userCredential.user;
+      if (user != null) {
+        await FirebaseFirestore.instance.collection('users').doc(user.uid).set({
+          'name': _nameController.text.trim(),
+          'email': _emailController.text.trim(),
+          'createdAt': FieldValue.serverTimestamp(),
+          'children': {}, // placeholder for future child linking
+        });
+
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(const SnackBar(content: Text('Signup successful!')));
+        Navigator.of(context).pushReplacement(
+          MaterialPageRoute(builder: (context) => const Signin()),
+        );
+      }
     } on FirebaseAuthException catch (e) {
       ScaffoldMessenger.of(
         context,
