@@ -56,82 +56,129 @@ class _DeviceSelectionScreenState extends State<DeviceSelectionScreen> {
           ),
         ],
       ),
-      body: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.center,
-          children: [
-            // Illustration
-            Image.asset('assets/images/aiGuardianLogo.png', height: 180),
+      body: SingleChildScrollView(
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 16),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              // Illustration
+              Image.asset('assets/images/aiGuardianLogo.png', height: 180),
 
-            const SizedBox(height: 30),
+              const SizedBox(height: 30),
 
-            // Title
-            const Text(
-              'Protect a Device',
-              style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
-            ),
-            const SizedBox(height: 10),
-            const Text(
-              'What kind of device does your child use?',
-              textAlign: TextAlign.center,
-              style: TextStyle(fontSize: 16, color: Colors.black54),
-            ),
-            const SizedBox(height: 30),
+              // Title
+              const Text(
+                'Protect a Device',
+                style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
+              ),
+              const SizedBox(height: 10),
+              const Text(
+                'What kind of device does your child use?',
+                textAlign: TextAlign.center,
+                style: TextStyle(fontSize: 16, color: Colors.black54),
+              ),
+              const SizedBox(height: 30),
 
-            // Dropdown
-            DropdownButtonFormField<String>(
-              value: _selectedDevice,
-              hint: const Text("Select Device"),
-              items:
-                  _deviceOptions
-                      .map(
-                        (device) => DropdownMenuItem(
-                          value: device,
-                          child: Text(device),
+              // Dropdown
+              DropdownButtonFormField<String>(
+                value: _selectedDevice,
+                hint: const Text("Select Device"),
+                items:
+                    _deviceOptions
+                        .map(
+                          (device) => DropdownMenuItem(
+                            value: device,
+                            child: Text(device),
+                          ),
+                        )
+                        .toList(),
+                onChanged: (value) {
+                  setState(() {
+                    _selectedDevice = value;
+                  });
+                },
+                decoration: InputDecoration(
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  contentPadding: const EdgeInsets.symmetric(
+                    horizontal: 12,
+                    vertical: 14,
+                  ),
+                ),
+              ),
+
+              const SizedBox(height: 30),
+
+              // Steps after selection
+              if (_selectedDevice != null)
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text(
+                      'Setup Instructions:',
+                      style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                    buildStep(
+                      1,
+                      'Open Play Store / App Store on your child\'s device',
+                    ),
+                    buildStep(2, 'Download and Login "AI Guardian Child" App'),
+                    buildStep(
+                      3,
+                      'Confirm that you want to protect the device and follow the on-screen instructions to complete setup',
+                    ),
+                    const SizedBox(height: 24),
+
+                    const Text(
+                      'Link Your Child\'s Device:',
+                      style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                      children: [
+                        ElevatedButton.icon(
+                          onPressed: () {
+                            // TODO: Navigate to QR Code screen with parent UID
+                            // Navigator.push(context, MaterialPageRoute(builder: (_) => QRCodeScreen(parentUID)));
+                          },
+                          icon: const Icon(Icons.qr_code),
+                          label: const Text('QR Code'),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.deepPurple,
+                            foregroundColor: Colors.white,
+                          ),
                         ),
-                      )
-                      .toList(),
-              onChanged: (value) {
-                setState(() {
-                  _selectedDevice = value;
-                });
-              },
-              decoration: InputDecoration(
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(10),
+                        ElevatedButton.icon(
+                          onPressed: () async {
+                            // TODO: Generate 6-digit code and save in Firestore
+                            // final code = generateRandomCode();
+                            // await saveCodeToFirestore(code, parentUID);
+                            // Show dialog/snackbar
+                          },
+                          icon: const Icon(Icons.numbers),
+                          label: const Text('6-Digit Code'),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.deepPurple,
+                            foregroundColor: Colors.white,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
                 ),
-                contentPadding: const EdgeInsets.symmetric(
-                  horizontal: 12,
-                  vertical: 14,
-                ),
-              ),
-            ),
-
-            const SizedBox(height: 30),
-
-            // Steps after selection
-            if (_selectedDevice != null)
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const Text(
-                    'Setup Instructions:',
-                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-                  ),
-                  const SizedBox(height: 16),
-                  buildStep(
-                    1,
-                    'Open Play Store / App Store on your child\'s device',
-                  ),
-                  buildStep(2, 'Download and Login "AI Guardian Child" App'),
-                  buildStep(
-                    3,
-                    'Confirm that you want to protect the device and Follow the on-screen instructions to complete setup',
-                  ),
-                ],
-              ),
-          ],
+            ],
+          ),
         ),
       ),
     );
