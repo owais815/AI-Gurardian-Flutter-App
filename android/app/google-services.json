@@ -7,9 +7,47 @@
   "client": [
     {
       "client_info": {
+        "mobilesdk_app_id": "1:1052313028620:android:5596ede2727626574b8629",
+        "android_client_info": {
+          "package_name": "ai_guardian.child"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCWNKjEcFCc4DOr3zoE0uhSqs9FBUfqL5s"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    },
+    {
+      "client_info": {
         "mobilesdk_app_id": "1:1052313028620:android:cb2aa733f13b9bc84b8629",
         "android_client_info": {
           "package_name": "ai_guardian.parent"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCWNKjEcFCc4DOr3zoE0uhSqs9FBUfqL5s"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1052313028620:android:7a46f61504a261e54b8629",
+        "android_client_info": {
+          "package_name": "com.example.ai_guardian_child"
         }
       },
       "oauth_client": [],
