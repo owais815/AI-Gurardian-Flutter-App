@@ -66,6 +66,7 @@ class _SigninState extends State<Signin> {
     final Size size = MediaQuery.of(context).size;
 
     return Scaffold(
+      backgroundColor: Colors.white,
       body: Container(
         padding: EdgeInsets.symmetric(horizontal: size.width * 0.08),
         child: Form(
@@ -78,7 +79,7 @@ class _SigninState extends State<Signin> {
                   Icon(
                     Icons.shield_outlined,
                     size: size.height * 0.15,
-                    color: theme.colorScheme.primary,
+                    color: Color(0xFF4C5DF4),
                   ),
                   SizedBox(height: size.height * 0.04),
                   Text(
@@ -86,14 +87,14 @@ class _SigninState extends State<Signin> {
                     style: TextStyle(
                       fontSize: 28,
                       fontWeight: FontWeight.bold,
-                      color: theme.colorScheme.primary,
+                      color: Color(0xFF4C5DF4),
                     ),
                     textAlign: TextAlign.center,
                   ),
                   SizedBox(height: size.height * 0.01),
                   Text(
                     'Enter the credentials to access your account.',
-                    style: TextStyle(fontSize: 16, color: Colors.grey[600]),
+                    style: TextStyle(fontSize: 16, color: Color(0xFF4C5DF4)),
                     textAlign: TextAlign.center,
                   ),
                   SizedBox(height: size.height * 0.04),
@@ -175,7 +176,7 @@ class _SigninState extends State<Signin> {
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(8),
                       ),
-                      backgroundColor: theme.colorScheme.primary,
+                      backgroundColor: Color(0xFF4C5DF4),
                     ),
                     child:
                         _isLoading
@@ -196,7 +197,7 @@ class _SigninState extends State<Signin> {
                     children: [
                       Text(
                         'Don\'t have an account?',
-                        style: TextStyle(color: Colors.grey[600]),
+                        style: TextStyle(color: Color(0xFF4C5DF4)),
                       ),
                       TextButton(
                         onPressed: () {
