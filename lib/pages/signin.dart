@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:ai_guardian_parent/pages/signup.dart';
-import 'package:ai_guardian_parent/pages/welcome_screen.dart';
+import 'package:ai_guardian_parent/pages/my_family_screen.dart';
 
 class Signin extends StatefulWidget {
   const Signin({super.key});
@@ -34,14 +34,10 @@ class _SigninState extends State<Signin> {
             backgroundColor: Colors.green,
           ),
         );
+        // Navigate directly to MyFamilyScreen after successful sign-in
         Navigator.pushReplacement(
           context,
-          MaterialPageRoute(
-            builder:
-                (context) => WelcomeScreen(
-                  userName: _emailController.text.split('@').first,
-                ),
-          ),
+          MaterialPageRoute(builder: (context) => const MyFamilyScreen()),
         );
       } on FirebaseAuthException catch (e) {
         String errorMessage = 'An error occurred. Please try again.';
