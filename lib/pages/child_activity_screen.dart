@@ -711,7 +711,8 @@ class _ChildActivityScreenState extends State<ChildActivityScreen>
         return Theme(
           data: Theme.of(context).copyWith(
             colorScheme: ColorScheme.light(
-              primary: const Color.fromARGB(255, 2, 214, 30),
+              primary: Color(0xFF4C5DF4), // Header background color
+              onPrimary: Colors.white, // Header text color),
             ),
           ),
           child: child!,
@@ -737,7 +738,7 @@ class _ChildActivityScreenState extends State<ChildActivityScreen>
           '${widget.childName}\'s Activity',
           style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
         ),
-        backgroundColor: const Color.fromARGB(255, 2, 214, 30),
+        backgroundColor: Colors.deepPurple,
         elevation: 0,
         actions: [
           IconButton(
@@ -837,7 +838,7 @@ class _ChildActivityScreenState extends State<ChildActivityScreen>
                   children: [
                     CircularProgressIndicator(
                       valueColor: AlwaysStoppedAnimation<Color>(
-                        const Color.fromARGB(255, 2, 214, 30),
+                        Colors.deepPurple,
                       ),
                     ),
                     SizedBox(height: 16),
@@ -914,11 +915,7 @@ class _ChildActivityScreenState extends State<ChildActivityScreen>
               padding: EdgeInsets.all(20),
               child: Column(
                 children: [
-                  Icon(
-                    Icons.phone_android,
-                    size: 48,
-                    color: const Color.fromARGB(255, 2, 214, 30),
-                  ),
+                  Icon(Icons.phone_android, size: 48, color: Colors.deepPurple),
                   SizedBox(height: 12),
                   Text(
                     'Total Screen Time',
@@ -934,7 +931,7 @@ class _ChildActivityScreenState extends State<ChildActivityScreen>
                     style: TextStyle(
                       fontSize: 36,
                       fontWeight: FontWeight.bold,
-                      color: const Color.fromARGB(255, 2, 214, 30),
+                      color: Colors.deepPurple,
                     ),
                   ),
                   SizedBox(height: 8),
@@ -1278,7 +1275,7 @@ class _ChildActivityScreenState extends State<ChildActivityScreen>
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
       child: ListTile(
         leading: CircleAvatar(
-          backgroundColor: const Color.fromARGB(255, 2, 214, 30),
+          backgroundColor: Colors.deepPurple,
           child: Text(
             app.appName.isNotEmpty ? app.appName[0].toUpperCase() : 'A',
             style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
@@ -1298,7 +1295,7 @@ class _ChildActivityScreenState extends State<ChildActivityScreen>
               style: TextStyle(
                 fontSize: 16,
                 fontWeight: FontWeight.bold,
-                color: const Color.fromARGB(255, 2, 214, 30),
+                color: Colors.deepPurple,
               ),
             ),
             Text(
@@ -1331,7 +1328,7 @@ class _ChildActivityScreenState extends State<ChildActivityScreen>
           style: TextStyle(
             fontSize: 16,
             fontWeight: FontWeight.bold,
-            color: const Color.fromARGB(255, 2, 214, 30),
+            color: Colors.deepPurple,
           ),
         ),
       ),
