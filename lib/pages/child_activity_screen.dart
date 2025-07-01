@@ -25,18 +25,54 @@ class AppUsageStats {
   });
 
   factory AppUsageStats.fromJson(Map<String, dynamic> json) {
-    return AppUsageStats(
-      appName: json['appName'] ?? '',
-      packageName: json['packageName'] ?? '',
-      totalTimeInForeground: json['totalTimeInForeground'] ?? 0,
-      launchCount: json['launchCount'] ?? 0,
-      lastTimeUsed: json['lastTimeUsed'] ?? 0,
-      childId: json['childId'] ?? '',
-      date:
-          json['date'] is String
-              ? DateTime.tryParse(json['date']) ?? DateTime.now()
-              : DateTime.now(),
-    );
+    // print('📱 Parsing AppUsageStats from JSON: $json');
+
+    try {
+      final appStats = AppUsageStats(
+        appName: json['appName'] ?? json['app_name'] ?? '',
+        packageName: json['packageName'] ?? json['package_name'] ?? '',
+        totalTimeInForeground: _parseTimeValue(
+          json['totalTimeInForeground'] ??
+              json['total_time_in_foreground'] ??
+              json['usage_time'] ??
+              0,
+        ),
+        launchCount: json['launchCount'] ?? json['launch_count'] ?? 0,
+        lastTimeUsed: json['lastTimeUsed'] ?? json['last_time_used'] ?? 0,
+        childId: json['childId'] ?? json['child_id'] ?? '',
+        date: _parseDate(json['date']),
+      );
+
+      // print(
+      //   '✅ Successfully parsed AppUsageStats: ${appStats.appName} - ${appStats.totalTimeInForeground}ms',
+      // );
+      return appStats;
+    } catch (e, stackTrace) {
+      // print('❌ Error parsing AppUsageStats: $e');
+      // print('Stack trace: $stackTrace');
+      rethrow;
+    }
+  }
+
+  static int _parseTimeValue(dynamic value) {
+    if (value is int) return value;
+    if (value is double) return value.toInt();
+    if (value is String) return int.tryParse(value) ?? 0;
+    return 0;
+  }
+
+  static DateTime _parseDate(dynamic dateValue) {
+    if (dateValue is String) {
+      return DateTime.tryParse(dateValue) ?? DateTime.now();
+    } else if (dateValue is Timestamp) {
+      return dateValue.toDate();
+    }
+    return DateTime.now();
+  }
+
+  @override
+  String toString() {
+    return 'AppUsageStats(appName: $appName, packageName: $packageName, totalTime: ${totalTimeInForeground}ms, launches: $launchCount)';
   }
 }
 
@@ -76,6 +112,7 @@ class _ChildActivityScreenState extends State<ChildActivityScreen>
   @override
   void initState() {
     super.initState();
+    // print('🚀 Initializing ChildActivityScreen for child: ${widget.childId}');
     _tabController = TabController(length: 3, vsync: this);
     _selectedDate = DateTime.now();
     _initializeScreen();
@@ -89,10 +126,15 @@ class _ChildActivityScreenState extends State<ChildActivityScreen>
   }
 
   Future<void> _initializeScreen() async {
+    // print(
+    //   '🔄 Initializing screen for date: ${_formatDateString(_selectedDate)}',
+    // );
     try {
       await _loadDataForDate(_selectedDate);
-    } catch (e) {
-      print('Error initializing screen: $e');
+      // print('✅ Screen initialization completed');
+    } catch (e, stackTrace) {
+      print('❌ Error initializing screen: $e');
+      print('Stack trace: $stackTrace');
     } finally {
       if (mounted) {
         setState(() {
@@ -104,15 +146,20 @@ class _ChildActivityScreenState extends State<ChildActivityScreen>
 
   Future<void> _loadDataForDate(DateTime date) async {
     final dateString = _formatDateString(date);
+    // print('📅 Loading data for date: $dateString');
 
     // Check cache first
     if (_dailyStatsCache.containsKey(dateString) &&
         _dailyAppsCache.containsKey(dateString)) {
+      // print('💾 Loading data from cache for $dateString');
       setState(() {
         _currentDayStats = _dailyStatsCache[dateString];
         _currentAppUsageList = _dailyAppsCache[dateString] ?? [];
         _currentCategoryUsage = _dailyCategoriesCache[dateString] ?? {};
       });
+      // print(
+      //   '📊 Cache data loaded - Apps: ${_currentAppUsageList.length}, Stats: $_currentDayStats',
+      // );
       return;
     }
 
@@ -122,9 +169,12 @@ class _ChildActivityScreenState extends State<ChildActivityScreen>
 
     try {
       // Load stats and apps for the specific date
+      // print('🔄 Loading fresh data for $dateString');
       await Future.wait([_loadStatsForDate(date), _loadAppsForDate(date)]);
-    } catch (e) {
-      print('Error loading data for date $dateString: $e');
+      // print('✅ Data loading completed for $dateString');
+    } catch (e, stackTrace) {
+      print('❌ Error loading data for date $dateString: $e');
+      // print('Stack trace: $stackTrace');
     } finally {
       setState(() {
         _isLoading = false;
@@ -135,7 +185,9 @@ class _ChildActivityScreenState extends State<ChildActivityScreen>
   Future<void> _loadStatsForDate(DateTime date) async {
     try {
       final dateString = _formatDateString(date);
-      print('Loading stats for date: $dateString, childId: ${widget.childId}');
+      print(
+        '📊 Loading stats for date: $dateString, childId: ${widget.childId}',
+      );
 
       // Check if it's today - use real-time data
       if (_isToday(date)) {
@@ -143,13 +195,16 @@ class _ChildActivityScreenState extends State<ChildActivityScreen>
       } else {
         await _loadHistoricalStats(dateString);
       }
-    } catch (e) {
-      print('Error loading stats for date: $e');
+    } catch (e, stackTrace) {
+      print('❌ Error loading stats for date: $e');
+      // print('Stack trace: $stackTrace');
     }
   }
 
   Future<void> _loadTodayRealTimeStats(String dateString) async {
     try {
+      // print('🔴 Loading today\'s real-time stats for $dateString');
+
       // For today, try to get the most up-to-date data
       final doc =
           await FirebaseFirestore.instance
@@ -163,8 +218,9 @@ class _ChildActivityScreenState extends State<ChildActivityScreen>
 
       if (doc.exists && doc.data() != null) {
         statsData = doc.data();
-        print('Found today stats: $statsData');
+        // print('✅ Found today stats in usage_tracking: $statsData');
       } else {
+        // print('⚠️ No data in usage_tracking, trying alternative collection');
         // Try alternative collection
         final altDoc =
             await FirebaseFirestore.instance
@@ -176,7 +232,9 @@ class _ChildActivityScreenState extends State<ChildActivityScreen>
 
         if (altDoc.exists && altDoc.data() != null) {
           statsData = altDoc.data();
-          print('Found stats in alternative collection');
+          // print('✅ Found stats in alternative collection: $statsData');
+        } else {
+          print('⚠️ No stats found in either collection for today');
         }
       }
 
@@ -185,13 +243,18 @@ class _ChildActivityScreenState extends State<ChildActivityScreen>
       setState(() {
         _currentDayStats = statsData;
       });
-    } catch (e) {
-      print('Error loading today real-time stats: $e');
+
+      // print('📊 Current day stats set: $_currentDayStats');
+    } catch (e, stackTrace) {
+      print('❌ Error loading today real-time stats: $e');
+      // print('Stack trace: $stackTrace');
     }
   }
 
   Future<void> _loadHistoricalStats(String dateString) async {
     try {
+      // print('📚 Loading historical stats for $dateString');
+
       // For historical dates, check both collections
       final futures = [
         FirebaseFirestore.instance
@@ -211,28 +274,40 @@ class _ChildActivityScreenState extends State<ChildActivityScreen>
       final results = await Future.wait(futures);
       Map<String, dynamic>? statsData;
 
-      for (final doc in results) {
+      for (int i = 0; i < results.length; i++) {
+        final doc = results[i];
+        final collectionName = i == 0 ? 'usage_tracking' : 'usage_stats';
+
         if (doc.exists && doc.data() != null) {
           statsData = doc.data() as Map<String, dynamic>?;
-          print('Found historical stats for $dateString: $statsData');
+          // print(
+          //   '✅ Found historical stats for $dateString in $collectionName: $statsData',
+          // );
           break;
+        } else {
+          print('⚠️ No data found in $collectionName for $dateString');
         }
       }
+
+      // if (statsData == null) {
+      //   print('⚠️ No historical stats found in any collection for $dateString');
+      // }
 
       // Cache and update current stats
       _dailyStatsCache[dateString] = statsData;
       setState(() {
         _currentDayStats = statsData;
       });
-    } catch (e) {
-      print('Error loading historical stats: $e');
+    } catch (e, stackTrace) {
+      print('❌ Error loading historical stats: $e');
+      // print('Stack trace: $stackTrace');
     }
   }
 
   Future<void> _loadAppsForDate(DateTime date) async {
     try {
       final dateString = _formatDateString(date);
-      print('Loading apps for date: $dateString');
+      // print('📱 Loading apps for date: $dateString');
 
       List<AppUsageStats> appStats = [];
 
@@ -243,8 +318,17 @@ class _ChildActivityScreenState extends State<ChildActivityScreen>
         appStats = await _loadHistoricalAppStats(dateString);
       }
 
+      // print('📱 Loaded ${appStats.length} apps for $dateString');
+
+      // Log each app for debugging
+      for (int i = 0; i < appStats.length; i++) {
+        final app = appStats[i];
+        // print('  App $i: ${app.appName} - ${app.totalTimeInForeground}ms');
+      }
+
       // Calculate category usage
       final categoryUsage = _calculateCategoryUsage(appStats);
+      // print('📊 Category usage calculated: $categoryUsage');
 
       // Cache the results
       _dailyAppsCache[dateString] = appStats;
@@ -255,23 +339,29 @@ class _ChildActivityScreenState extends State<ChildActivityScreen>
         _currentCategoryUsage = categoryUsage;
       });
 
-      print('Loaded ${appStats.length} apps for $dateString');
-    } catch (e) {
-      print('Error loading apps for date: $e');
+      print(
+        '✅ Apps loading completed - Final count: ${_currentAppUsageList.length}',
+      );
+    } catch (e, stackTrace) {
+      print('❌ Error loading apps for date: $e');
+      // print('Stack trace: $stackTrace');
     }
   }
 
   Future<List<AppUsageStats>> _loadTodayAppStats(String dateString) async {
     try {
+      // print('🔴 Loading today\'s app stats for $dateString');
       // For today, fallback to Firebase directly since we don't have UsageTrackingService
       return await _loadAppStatsFromFirebase(dateString);
-    } catch (e) {
-      print('Error loading today app stats: $e');
+    } catch (e, stackTrace) {
+      print('❌ Error loading today app stats: $e');
+      // print('Stack trace: $stackTrace');
       return await _loadAppStatsFromFirebase(dateString);
     }
   }
 
   Future<List<AppUsageStats>> _loadHistoricalAppStats(String dateString) async {
+    // print('📚 Loading historical app stats for $dateString');
     return await _loadAppStatsFromFirebase(dateString);
   }
 
@@ -279,71 +369,216 @@ class _ChildActivityScreenState extends State<ChildActivityScreen>
     String dateString,
   ) async {
     try {
-      print('Loading app usage from Firebase for date: $dateString');
+      // print('🔥 Loading app usage from Firebase for date: $dateString');
+      print('🔥 Child ID: ${widget.childId}');
 
-      final futures = [
-        // Try main collection
-        FirebaseFirestore.instance
-            .collection('usage_stats')
-            .doc(widget.childId)
-            .collection('daily')
-            .doc(dateString)
-            .collection('apps')
-            .get(),
-        // Try alternative collection
-        FirebaseFirestore.instance
-            .collection('usage_tracking')
-            .doc(widget.childId)
-            .collection('daily_stats')
-            .doc(dateString)
-            .collection('apps')
-            .get(),
-      ];
+      // Try multiple collection paths
+      final collectionPaths = [
+        // Path 1: usage_stats/childId/daily/date/apps
+        () async {
+          print(
+            '🔍 Trying path: usage_stats/${widget.childId}/daily/$dateString/apps',
+          );
+          return await FirebaseFirestore.instance
+              .collection('usage_stats')
+              .doc(widget.childId)
+              .collection('daily')
+              .doc(dateString)
+              .collection('apps')
+              .get();
+        },
+        // Path 2: usage_tracking/childId/daily_stats/date/apps
+        () async {
+          print(
+            '🔍 Trying path: usage_tracking/${widget.childId}/daily_stats/$dateString/apps',
+          );
+          return await FirebaseFirestore.instance
+              .collection('usage_tracking')
+              .doc(widget.childId)
+              .collection('daily_stats')
+              .doc(dateString)
+              .collection('apps')
+              .get();
+        },
+        // Path 3: Check if apps are stored directly in the daily stats document
+        () async {
+          print(
+            '🔍 Trying path: usage_stats/${widget.childId}/daily/$dateString (looking for apps field)',
+          );
+          final doc =
+              await FirebaseFirestore.instance
+                  .collection('usage_stats')
+                  .doc(widget.childId)
+                  .collection('daily')
+                  .doc(dateString)
+                  .get();
 
-      final results = await Future.wait(futures);
-
-      for (final appsQuery in results) {
-        if (appsQuery.docs.isNotEmpty) {
-          print('Found ${appsQuery.docs.length} apps in Firebase');
-
-          final List<AppUsageStats> firebaseStats = [];
-          for (final doc in appsQuery.docs) {
-            try {
-              final data = doc.data();
-              data['childId'] = widget.childId;
-
-              // Handle date field
-              if (!data.containsKey('date') || data['date'] == null) {
-                data['date'] = dateString;
-              }
-
-              final appStat = AppUsageStats.fromJson(data);
-              if (appStat.totalTimeInForeground > 0) {
-                firebaseStats.add(appStat);
-              }
-            } catch (e) {
-              print('Error parsing app stat from Firebase: $e');
+          if (doc.exists && doc.data()?.containsKey('apps') == true) {
+            final appsData = doc.data()!['apps'];
+            if (appsData is List) {
+              // Create a fake QuerySnapshot-like structure
+              return _createMockQuerySnapshot(appsData, dateString);
             }
           }
+          throw Exception('No apps field found');
+        },
+      ];
 
-          if (firebaseStats.isNotEmpty) {
-            firebaseStats.sort(
-              (a, b) =>
-                  b.totalTimeInForeground.compareTo(a.totalTimeInForeground),
-            );
-            return firebaseStats;
+      for (int i = 0; i < collectionPaths.length; i++) {
+        try {
+          final appsQuery = await collectionPaths[i]();
+
+          if (appsQuery.docs.isNotEmpty) {
+            print('✅ Found ${appsQuery.docs.length} apps in path ${i + 1}');
+
+            final List<AppUsageStats> firebaseStats = [];
+            for (int j = 0; j < appsQuery.docs.length; j++) {
+              try {
+                final doc = appsQuery.docs[j];
+                final data = Map<String, dynamic>.from(doc.data() as Map);
+
+                print('📱 Processing app document $j: ${doc.id}');
+                print('📄 Raw data: $data');
+
+                // Ensure required fields
+                data['childId'] = widget.childId;
+
+                // Handle date field
+                if (!data.containsKey('date') || data['date'] == null) {
+                  data['date'] = dateString;
+                }
+
+                final appStat = AppUsageStats.fromJson(data);
+
+                // Only include apps with actual usage time
+                if (appStat.totalTimeInForeground > 0) {
+                  firebaseStats.add(appStat);
+                  print(
+                    '✅ Added app: ${appStat.appName} with ${appStat.totalTimeInForeground}ms',
+                  );
+                } else {
+                  print('⚠️ Skipped app ${appStat.appName} - no usage time');
+                }
+              } catch (e, stackTrace) {
+                print('❌ Error parsing app stat from Firebase: $e');
+                print('Stack trace: $stackTrace');
+              }
+            }
+
+            if (firebaseStats.isNotEmpty) {
+              firebaseStats.sort(
+                (a, b) =>
+                    b.totalTimeInForeground.compareTo(a.totalTimeInForeground),
+              );
+              print('✅ Returning ${firebaseStats.length} valid app stats');
+              return firebaseStats;
+            } else {
+              print('⚠️ No valid app stats found in path ${i + 1}');
+            }
+          } else {
+            print('⚠️ No documents found in path ${i + 1}');
           }
+        } catch (e) {
+          print('⚠️ Path ${i + 1} failed: $e');
         }
       }
 
+      // Try to get all documents in the parent collections to debug
+      await _debugFirebaseCollections(dateString);
+
+      print('❌ No app data found in any collection path');
       return [];
-    } catch (e) {
-      print('Error loading from Firebase: $e');
+    } catch (e, stackTrace) {
+      print('❌ Error loading from Firebase: $e');
+      print('Stack trace: $stackTrace');
       return [];
     }
   }
 
+  // Helper method to debug Firebase collections
+  Future<void> _debugFirebaseCollections(String dateString) async {
+    try {
+      print('🔍 DEBUG: Checking Firebase collections structure...');
+
+      // Check usage_stats collection
+      final usageStatsDoc =
+          await FirebaseFirestore.instance
+              .collection('usage_stats')
+              .doc(widget.childId)
+              .get();
+
+      if (usageStatsDoc.exists) {
+        // print('✅ usage_stats document exists for child ${widget.childId}');
+
+        // Check daily subcollection
+        final dailyCollection =
+            await FirebaseFirestore.instance
+                .collection('usage_stats')
+                .doc(widget.childId)
+                .collection('daily')
+                .get();
+
+        // print(
+        //   '📅 Daily collection has ${dailyCollection.docs.length} documents',
+        // );
+        for (final doc in dailyCollection.docs.take(5)) {
+          print('  Document: ${doc.id} - ${doc.data().keys.toList()}');
+        }
+
+        // Check specific date
+        final dateDoc =
+            await FirebaseFirestore.instance
+                .collection('usage_stats')
+                .doc(widget.childId)
+                .collection('daily')
+                .doc(dateString)
+                .get();
+
+        if (dateDoc.exists) {
+          print(
+            '✅ Date document $dateString exists with keys: ${dateDoc.data()?.keys.toList()}',
+          );
+        } else {
+          print('❌ Date document $dateString does not exist');
+        }
+      } else {
+        print(
+          '❌ usage_stats document does not exist for child ${widget.childId}',
+        );
+      }
+
+      // Check usage_tracking collection
+      final usageTrackingDoc =
+          await FirebaseFirestore.instance
+              .collection('usage_tracking')
+              .doc(widget.childId)
+              .get();
+
+      if (usageTrackingDoc.exists) {
+        print('✅ usage_tracking document exists for child ${widget.childId}');
+      } else {
+        print(
+          '❌ usage_tracking document does not exist for child ${widget.childId}',
+        );
+      }
+    } catch (e) {
+      print('❌ Debug error: $e');
+    }
+  }
+
+  // Helper method to create mock QuerySnapshot for apps stored as array
+  dynamic _createMockQuerySnapshot(List appsData, String dateString) {
+    // This is a simplified approach - you might need to adjust based on your actual data structure
+    final docs =
+        appsData.map((appData) {
+          return MockDocumentSnapshot(appData as Map<String, dynamic>);
+        }).toList();
+
+    return MockQuerySnapshot(docs);
+  }
+
   Map<String, int> _calculateCategoryUsage(List<AppUsageStats> stats) {
+    // print('📊 Calculating category usage for ${stats.length} apps');
     final categories = <String, int>{
       'Social Media': 0,
       'Games': 0,
@@ -356,8 +591,12 @@ class _ChildActivityScreenState extends State<ChildActivityScreen>
       final category = _getAppCategory(stat.packageName);
       categories[category] =
           (categories[category] ?? 0) + stat.totalTimeInForeground;
+      // print(
+      //   '  ${stat.appName} (${stat.packageName}) -> $category: ${stat.totalTimeInForeground}ms',
+      // );
     }
 
+    // print('📊 Final category usage: $categories');
     return categories;
   }
 
@@ -452,6 +691,7 @@ class _ChildActivityScreenState extends State<ChildActivityScreen>
   }
 
   void _navigateToDate(DateTime date) {
+    // print('🗓️ Navigating to date: ${_formatDateString(date)}');
     setState(() {
       _selectedDate = date;
     });
@@ -486,6 +726,10 @@ class _ChildActivityScreenState extends State<ChildActivityScreen>
 
   @override
   Widget build(BuildContext context) {
+    // print(
+    //   '🔄 Building widget - Loading: $_isLoading, Apps: ${_currentAppUsageList.length}, Stats: $_currentDayStats',
+    // );
+
     return Scaffold(
       backgroundColor: Colors.grey[50],
       appBar: AppBar(
@@ -503,6 +747,13 @@ class _ChildActivityScreenState extends State<ChildActivityScreen>
           IconButton(
             icon: Icon(Icons.refresh, color: Colors.white),
             onPressed: () {
+              // print('🔄 Manual refresh triggered');
+              // Clear cache for current date
+              final dateString = _formatDateString(_selectedDate);
+              _dailyStatsCache.remove(dateString);
+              _dailyAppsCache.remove(dateString);
+              _dailyCategoriesCache.remove(dateString);
+
               setState(() {
                 _isLoading = true;
               });
@@ -581,10 +832,17 @@ class _ChildActivityScreenState extends State<ChildActivityScreen>
       body:
           _isLoading
               ? Center(
-                child: CircularProgressIndicator(
-                  valueColor: AlwaysStoppedAnimation<Color>(
-                    const Color.fromARGB(255, 2, 214, 30),
-                  ),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    CircularProgressIndicator(
+                      valueColor: AlwaysStoppedAnimation<Color>(
+                        const Color.fromARGB(255, 2, 214, 30),
+                      ),
+                    ),
+                    SizedBox(height: 16),
+                    Text('Loading activity data...'),
+                  ],
                 ),
               )
               : TabBarView(
@@ -602,15 +860,50 @@ class _ChildActivityScreenState extends State<ChildActivityScreen>
     final totalScreenTime =
         _currentDayStats?['totalScreenTimeMinutes'] ??
         _currentDayStats?['timeInMinutes'] ??
+        _currentDayStats?['total_screen_time'] ??
         0;
     final appCount =
-        _currentDayStats?['appCount'] ?? _currentAppUsageList.length;
+        _currentDayStats?['appCount'] ??
+        _currentDayStats?['app_count'] ??
+        _currentAppUsageList.length;
+
+    // print(
+    //   '📊 Overview - Screen time: $totalScreenTime, App count: $appCount, Apps list length: ${_currentAppUsageList.length}',
+    // );
 
     return SingleChildScrollView(
       padding: EdgeInsets.all(16),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+          // Debug info card (remove in production)
+          // Card(
+          //   elevation: 2,
+          //   color: Colors.blue[50],
+          //   child: Padding(
+          //     padding: EdgeInsets.all(12),
+          //     child: Column(
+          //       crossAxisAlignment: CrossAxisAlignment.start,
+          //       children: [
+          //         Text(
+          //           '🔍 Debug Info',
+          //           style: TextStyle(fontWeight: FontWeight.bold),
+          //         ),
+          //         SizedBox(height: 8),
+          //         Text('Date: ${_formatDateString(_selectedDate)}'),
+          //         Text('Child ID: ${widget.childId}'),
+          //         Text('Stats available: ${_currentDayStats != null}'),
+          //         Text('Apps loaded: ${_currentAppUsageList.length}'),
+          //         Text('Categories: ${_currentCategoryUsage.length}'),
+          //         if (_currentDayStats != null)
+          //           Text('Stats keys: ${_currentDayStats!.keys.toList()}'),
+          //       ],
+          //     ),
+          //   ),
+          // ),
+
+          // SizedBox(height: 16),
+
           // Screen Time Card
           Card(
             elevation: 4,
@@ -709,6 +1002,18 @@ class _ChildActivityScreenState extends State<ChildActivityScreen>
                         : 'No data recorded for this date',
                     style: TextStyle(fontSize: 14, color: Colors.grey[500]),
                   ),
+                  // SizedBox(height: 16),
+                  // ElevatedButton(
+                  //   onPressed: () {
+                  //     print('🔄 Debug refresh button pressed');
+                  //     final dateString = _formatDateString(_selectedDate);
+                  //     _dailyStatsCache.remove(dateString);
+                  //     _dailyAppsCache.remove(dateString);
+                  //     _dailyCategoriesCache.remove(dateString);
+                  //     _loadDataForDate(_selectedDate);
+                  //   },
+                  //   child: Text('Debug Refresh'),
+                  // ),
                 ],
               ),
             )
@@ -722,9 +1027,41 @@ class _ChildActivityScreenState extends State<ChildActivityScreen>
   }
 
   Widget _buildAppsTab() {
+    print('📱 Building Apps tab with ${_currentAppUsageList.length} apps');
+
     return ListView(
       padding: EdgeInsets.all(16),
       children: [
+        // Debug info
+        // Card(
+        //   elevation: 2,
+        //   color: Colors.orange[50],
+        //   child: Padding(
+        //     padding: EdgeInsets.all(12),
+        //     child: Column(
+        //       crossAxisAlignment: CrossAxisAlignment.start,
+        //       children: [
+        //         Text(
+        //           '🔍 Apps Debug Info',
+        //           style: TextStyle(fontWeight: FontWeight.bold),
+        //         ),
+        //         SizedBox(height: 8),
+        //         Text('Total apps loaded: ${_currentAppUsageList.length}'),
+        //         Text('Cache entries: ${_dailyAppsCache.length}'),
+        //         Text('Current date: ${_formatDateString(_selectedDate)}'),
+        //         if (_currentAppUsageList.isNotEmpty) ...[
+        //           SizedBox(height: 8),
+        //           Text('Top app: ${_currentAppUsageList.first.appName}'),
+        //           Text(
+        //             'Top app time: ${_currentAppUsageList.first.totalTimeInForeground}ms',
+        //           ),
+        //         ],
+        // ],
+        //     ),
+        //   ),
+        // ),
+
+        // SizedBox(height: 16),
         Text(
           'All Apps Usage',
           style: TextStyle(
@@ -754,6 +1091,16 @@ class _ChildActivityScreenState extends State<ChildActivityScreen>
                   style: TextStyle(fontSize: 14, color: Colors.grey[500]),
                   textAlign: TextAlign.center,
                 ),
+                SizedBox(height: 16),
+                ElevatedButton(
+                  onPressed: () async {
+                    print('🔄 Debug: Running Firebase collection check');
+                    await _debugFirebaseCollections(
+                      _formatDateString(_selectedDate),
+                    );
+                  },
+                  child: Text('Debug Firebase'),
+                ),
               ],
             ),
           )
@@ -769,11 +1116,42 @@ class _ChildActivityScreenState extends State<ChildActivityScreen>
       (sum, value) => sum + value,
     );
 
+    print(
+      '📊 Building Categories tab - Total usage: $totalUsage, Categories: $_currentCategoryUsage',
+    );
+
     return SingleChildScrollView(
       padding: EdgeInsets.all(16),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+          // Debug info
+          // Card(
+          //   elevation: 2,
+          //   color: Colors.green[50],
+          //   child: Padding(
+          //     padding: EdgeInsets.all(12),
+          //     child: Column(
+          //       crossAxisAlignment: CrossAxisAlignment.start,
+          //       children: [
+          //         Text(
+          //           '🔍 Categories Debug Info',
+          //           style: TextStyle(fontWeight: FontWeight.bold),
+          //         ),
+          //         SizedBox(height: 8),
+          //         Text('Total usage: ${totalUsage}ms'),
+          //         Text(
+          //           'Categories with data: ${_currentCategoryUsage.entries.where((e) => e.value > 0).length}',
+          //         ),
+          //         ..._currentCategoryUsage.entries.map(
+          //           (entry) => Text('${entry.key}: ${entry.value}ms'),
+          //         ),
+          //       ],
+          //     ),
+          //   ),
+          // ),
+
+          // SizedBox(height: 16),
           Text(
             'Usage by Category',
             style: TextStyle(
@@ -976,4 +1354,20 @@ class _ChildActivityScreenState extends State<ChildActivityScreen>
         return Colors.orange;
     }
   }
+}
+
+// Mock classes for handling apps stored as arrays
+class MockDocumentSnapshot {
+  final Map<String, dynamic> _data;
+
+  MockDocumentSnapshot(this._data);
+
+  Map<String, dynamic> data() => _data;
+  String get id => _data['packageName'] ?? 'unknown';
+}
+
+class MockQuerySnapshot {
+  final List<MockDocumentSnapshot> docs;
+
+  MockQuerySnapshot(this.docs);
 }
