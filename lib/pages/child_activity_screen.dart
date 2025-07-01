@@ -61,6 +61,7 @@ class _ChildActivityScreenState extends State<ChildActivityScreen>
 
   // Daily navigation
   DateTime _selectedDate = DateTime.now();
+  final PageController _pageController = PageController(initialPage: 1000);
 
   // Daily stats cache
   final Map<String, Map<String, dynamic>?> _dailyStatsCache = {};
@@ -83,6 +84,7 @@ class _ChildActivityScreenState extends State<ChildActivityScreen>
   @override
   void dispose() {
     _tabController.dispose();
+    _pageController.dispose();
     super.dispose();
   }
 
@@ -234,8 +236,12 @@ class _ChildActivityScreenState extends State<ChildActivityScreen>
 
       List<AppUsageStats> appStats = [];
 
-      // Try both today and historical data approaches
-      appStats = await _loadAppStatsFromFirebase(dateString);
+      // If it's today, try to get real-time data first
+      if (_isToday(date)) {
+        appStats = await _loadTodayAppStats(dateString);
+      } else {
+        appStats = await _loadHistoricalAppStats(dateString);
+      }
 
       // Calculate category usage
       final categoryUsage = _calculateCategoryUsage(appStats);
@@ -255,62 +261,26 @@ class _ChildActivityScreenState extends State<ChildActivityScreen>
     }
   }
 
+  Future<List<AppUsageStats>> _loadTodayAppStats(String dateString) async {
+    try {
+      // For today, fallback to Firebase directly since we don't have UsageTrackingService
+      return await _loadAppStatsFromFirebase(dateString);
+    } catch (e) {
+      print('Error loading today app stats: $e');
+      return await _loadAppStatsFromFirebase(dateString);
+    }
+  }
+
+  Future<List<AppUsageStats>> _loadHistoricalAppStats(String dateString) async {
+    return await _loadAppStatsFromFirebase(dateString);
+  }
+
   Future<List<AppUsageStats>> _loadAppStatsFromFirebase(
     String dateString,
   ) async {
     try {
       print('Loading app usage from Firebase for date: $dateString');
 
-      // Try to get data from the original approach first (from the first screen)
-      DateTime startDate;
-      DateTime endDate = DateTime.now();
-
-      // Use the same date logic as the original screen
-      startDate = DateTime.parse(dateString);
-      endDate = startDate.add(Duration(days: 1));
-
-      // Query usage stats from Firestore (original approach)
-      final querySnapshot =
-          await FirebaseFirestore.instance
-              .collection('usage_stats')
-              .where('childId', isEqualTo: widget.childId)
-              .where(
-                'date',
-                isGreaterThanOrEqualTo: startDate.toIso8601String(),
-              )
-              .where('date', isLessThanOrEqualTo: endDate.toIso8601String())
-              .orderBy('date', descending: true)
-              .get();
-
-      List<AppUsageStats> stats = [];
-
-      for (var doc in querySnapshot.docs) {
-        try {
-          final data = doc.data();
-          data['childId'] = widget.childId;
-
-          // Handle date field
-          if (!data.containsKey('date') || data['date'] == null) {
-            data['date'] = dateString;
-          }
-
-          final appStat = AppUsageStats.fromJson(data);
-          if (appStat.totalTimeInForeground > 0) {
-            stats.add(appStat);
-          }
-        } catch (e) {
-          print('Error parsing app stat from Firebase: $e');
-        }
-      }
-
-      if (stats.isNotEmpty) {
-        stats.sort(
-          (a, b) => b.totalTimeInForeground.compareTo(a.totalTimeInForeground),
-        );
-        return stats;
-      }
-
-      // Fallback to the new collection structure
       final futures = [
         // Try main collection
         FirebaseFirestore.instance
@@ -500,7 +470,9 @@ class _ChildActivityScreenState extends State<ChildActivityScreen>
       builder: (context, child) {
         return Theme(
           data: Theme.of(context).copyWith(
-            colorScheme: ColorScheme.light(primary: const Color(0xFF4C5DF4)),
+            colorScheme: ColorScheme.light(
+              primary: const Color.fromARGB(255, 2, 214, 30),
+            ),
           ),
           child: child!,
         );
@@ -521,7 +493,7 @@ class _ChildActivityScreenState extends State<ChildActivityScreen>
           '${widget.childName}\'s Activity',
           style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
         ),
-        backgroundColor: const Color(0xFF4C5DF4),
+        backgroundColor: const Color.fromARGB(255, 2, 214, 30),
         elevation: 0,
         actions: [
           IconButton(
@@ -611,7 +583,7 @@ class _ChildActivityScreenState extends State<ChildActivityScreen>
               ? Center(
                 child: CircularProgressIndicator(
                   valueColor: AlwaysStoppedAnimation<Color>(
-                    const Color(0xFF4C5DF4),
+                    const Color.fromARGB(255, 2, 214, 30),
                   ),
                 ),
               )
@@ -630,7 +602,7 @@ class _ChildActivityScreenState extends State<ChildActivityScreen>
     final totalScreenTime =
         _currentDayStats?['totalScreenTimeMinutes'] ??
         _currentDayStats?['timeInMinutes'] ??
-        _calculateTotalScreenTimeFromApps();
+        0;
     final appCount =
         _currentDayStats?['appCount'] ?? _currentAppUsageList.length;
 
@@ -652,7 +624,7 @@ class _ChildActivityScreenState extends State<ChildActivityScreen>
                   Icon(
                     Icons.phone_android,
                     size: 48,
-                    color: const Color(0xFF4C5DF4),
+                    color: const Color.fromARGB(255, 2, 214, 30),
                   ),
                   SizedBox(height: 12),
                   Text(
@@ -665,15 +637,11 @@ class _ChildActivityScreenState extends State<ChildActivityScreen>
                   ),
                   SizedBox(height: 8),
                   Text(
-                    _formatDuration(
-                      totalScreenTime is int
-                          ? totalScreenTime
-                          : (totalScreenTime * 60000).round(),
-                    ),
+                    '${totalScreenTime}m',
                     style: TextStyle(
                       fontSize: 36,
                       fontWeight: FontWeight.bold,
-                      color: const Color(0xFF4C5DF4),
+                      color: const Color.fromARGB(255, 2, 214, 30),
                     ),
                   ),
                   SizedBox(height: 8),
@@ -703,7 +671,7 @@ class _ChildActivityScreenState extends State<ChildActivityScreen>
               Expanded(
                 child: _buildStatCard(
                   'Average',
-                  '${appCount > 0 ? _formatDuration((totalScreenTime is int ? totalScreenTime : (totalScreenTime * 60000).round()) ~/ appCount) : "0m"}',
+                  '${appCount > 0 ? (totalScreenTime / appCount).round() : 0}m',
                   Icons.timeline,
                   Colors.orange,
                 ),
@@ -1007,12 +975,5 @@ class _ChildActivityScreenState extends State<ChildActivityScreen>
       default:
         return Colors.orange;
     }
-  }
-
-  int _calculateTotalScreenTimeFromApps() {
-    return _currentAppUsageList.fold(
-      0,
-      (total, app) => total + app.totalTimeInForeground,
-    );
   }
 }
