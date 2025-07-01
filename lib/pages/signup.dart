@@ -74,6 +74,7 @@ class _SignupState extends State<Signup> {
     final Size size = MediaQuery.of(context).size;
 
     return Scaffold(
+      backgroundColor: Colors.white,
       body: Container(
         padding: EdgeInsets.symmetric(horizontal: size.width * 0.08),
         child: Form(
@@ -90,7 +91,7 @@ class _SignupState extends State<Signup> {
                   Icon(
                     Icons.shield_outlined,
                     size: size.height * 0.12,
-                    color: theme.colorScheme.primary,
+                    color: Color(0xFF4C5DF4),
                   ),
                   SizedBox(height: size.height * 0.03),
                   Text(
@@ -98,7 +99,7 @@ class _SignupState extends State<Signup> {
                     style: TextStyle(
                       fontSize: 28,
                       fontWeight: FontWeight.bold,
-                      color: theme.colorScheme.primary,
+                      color: Color(0xFF4C5DF4),
                     ),
                     textAlign: TextAlign.center,
                   ),
@@ -182,7 +183,7 @@ class _SignupState extends State<Signup> {
                   ElevatedButton(
                     onPressed: _isLoading ? null : _signUp,
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: theme.colorScheme.primary,
+                      backgroundColor: Color(0xFF4C5DF4),
                       foregroundColor: Colors.white,
                       padding: const EdgeInsets.symmetric(vertical: 16),
                       shape: RoundedRectangleBorder(
