@@ -1,3 +1,4 @@
+import 'package:ai_guardian_parent/pages/child_activity_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -244,38 +245,27 @@ class _MyFamilyScreenState extends State<MyFamilyScreen> {
                     itemBuilder:
                         (context) => [
                           const PopupMenuItem(
-                            value: 'edit',
+                            value: 'view_activity',
                             child: Row(
                               children: [
-                                Icon(Icons.edit),
+                                Icon(Icons.analytics, color: Color(0xFF4C5DF4)),
                                 SizedBox(width: 8),
-                                Text('Edit'),
-                              ],
-                            ),
-                          ),
-                          const PopupMenuItem(
-                            value: 'delete',
-                            child: Row(
-                              children: [
-                                Icon(Icons.delete, color: Colors.red),
-                                SizedBox(width: 8),
-                                Text(
-                                  'Delete',
-                                  style: TextStyle(color: Colors.red),
-                                ),
+                                Text('View Activity'),
                               ],
                             ),
                           ),
                         ],
                     onSelected: (value) {
-                      if (value == 'delete') {
-                        _deleteChild(child['id']);
+                      if (value == 'view_activity') {
+                        _viewChildActivity(
+                          child['id'],
+                          child['name'] ?? 'Unknown',
+                        );
                       }
-                      // Handle edit if needed
                     },
                   ),
                   onTap: () {
-                    // Navigate to child details or monitoring screen
+                    _viewChildActivity(child['id'], child['name'] ?? 'Unknown');
                   },
                 ),
               );
@@ -314,27 +304,14 @@ class _MyFamilyScreenState extends State<MyFamilyScreen> {
     );
   }
 
-  Future<void> _deleteChild(String childId) async {
-    try {
-      final user = FirebaseAuth.instance.currentUser;
-      if (user != null) {
-        await FirebaseFirestore.instance
-            .collection('users')
-            .doc(user.uid)
-            .collection('children')
-            .doc(childId)
-            .delete();
-
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Child profile deleted successfully')),
-        );
-
-        _loadChildren(); // Reload the list
-      }
-    } catch (e) {
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text('Error deleting child: $e')));
-    }
+  Future<void> _viewChildActivity(String childId, String childName) async {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder:
+            (context) =>
+                ChildActivityScreen(childId: childId, childName: childName),
+      ),
+    );
   }
 }
