@@ -2,6 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:ai_guardian_parent/pages/signin.dart';
+import 'package:ai_guardian_parent/pages/welcome_screen.dart'; // Add this import
 
 class Signup extends StatefulWidget {
   const Signup({super.key});
@@ -48,8 +49,14 @@ class _SignupState extends State<Signup> {
         ScaffoldMessenger.of(
           context,
         ).showSnackBar(const SnackBar(content: Text('Signup successful!')));
+
+        // Navigate to welcome screen with user's name
         Navigator.of(context).pushReplacement(
-          MaterialPageRoute(builder: (context) => const Signin()),
+          MaterialPageRoute(
+            builder:
+                (context) =>
+                    WelcomeScreen(userName: _nameController.text.trim()),
+          ),
         );
       }
     } on FirebaseAuthException catch (e) {
