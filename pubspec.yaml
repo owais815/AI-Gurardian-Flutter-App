@@ -9,7 +9,8 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
-
+  intl: ^0.18.1
+  fl_chart: ^0.68.0
   cupertino_icons: ^1.0.8
   firebase_auth: ^5.5.1
   firebase_core: ^3.12.1
@@ -17,10 +18,10 @@ dependencies:
   qr_flutter: ^4.1.0
 
 dev_dependencies:
-  flutter_launcher_icons: ^0.13.1 # This should be indented correctly
   flutter_test:
     sdk: flutter
   flutter_lints: ^5.0.0
+  flutter_launcher_icons: ^0.13.1
 
 flutter:
   uses-material-design: true
@@ -28,7 +29,7 @@ flutter:
   assets:
     - assets/images/
 
-flutter_icons:
+flutter_launcher_icons:
   android: true
   ios: true
   image_path: "assets/images/parent side logo.png"
