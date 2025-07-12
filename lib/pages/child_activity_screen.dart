@@ -86,7 +86,7 @@ class _ChildActivityScreenState extends State<ChildActivityScreen>
     with SingleTickerProviderStateMixin {
   late TabController _tabController;
   bool _isLoading = true;
-
+  bool get _isViewingToday => _isToday(_selectedDate);
   // Daily navigation
   DateTime _selectedDate = DateTime.now();
   final PageController _pageController = PageController(initialPage: 1000);
@@ -144,18 +144,49 @@ class _ChildActivityScreenState extends State<ChildActivityScreen>
               .get();
 
       final blockedApps = <String, Map<String, dynamic>>{};
+      final now = DateTime.now();
+
       for (var doc in snapshot.docs) {
-        blockedApps[doc.id] = doc.data();
+        final data = doc.data();
+        final blockedAt = (data['blockedAt'] as Timestamp?)?.toDate();
+        final durationMs = data['durationMs'] as int? ?? -1;
+
+        // Check if block has expired
+        if (durationMs > 0 && blockedAt != null) {
+          final expiryTime = blockedAt.add(Duration(milliseconds: durationMs));
+          if (now.isAfter(expiryTime)) {
+            // Remove expired block
+            await FirebaseFirestore.instance
+                .collection('blocked_apps')
+                .doc(widget.childId)
+                .collection('apps')
+                .doc(doc.id)
+                .delete();
+            continue;
+          }
+        }
+
+        blockedApps[doc.id] = data;
       }
-      setState(() {
-        _blockedAppsCache.addAll(blockedApps);
-      });
+
+      if (mounted) {
+        setState(() {
+          _blockedAppsCache.clear();
+          _blockedAppsCache.addAll(blockedApps);
+        });
+      }
     } catch (e) {
       print('❌ Error loading blocked apps: $e');
     }
   }
 
   Future<void> _blockApp(AppUsageStats app, {Duration? duration}) async {
+    // Only allow blocking if viewing today's data
+    if (!_isViewingToday) {
+      _showBlockingNotAllowedDialog();
+      return;
+    }
+
     try {
       final blockData = {
         'appName': app.appName,
@@ -177,17 +208,30 @@ class _ChildActivityScreenState extends State<ChildActivityScreen>
       });
 
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('${app.appName} has been blocked')),
+        SnackBar(
+          content: Text('${app.appName} has been blocked'),
+          backgroundColor: Colors.red,
+        ),
       );
     } catch (e) {
       print('❌ Error blocking app: $e');
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text('Failed to block ${app.appName}')));
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Failed to block ${app.appName}'),
+          backgroundColor: Colors.red,
+        ),
+      );
     }
   }
 
+  // UPDATED: Modified _unblockApp to only work for current date
   Future<void> _unblockApp(String packageName, String appName) async {
+    // Only allow unblocking if viewing today's data
+    if (!_isViewingToday) {
+      _showBlockingNotAllowedDialog();
+      return;
+    }
+
     try {
       await FirebaseFirestore.instance
           .collection('blocked_apps')
@@ -200,18 +244,70 @@ class _ChildActivityScreenState extends State<ChildActivityScreen>
         _blockedAppsCache.remove(packageName);
       });
 
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text('$appName has been unblocked')));
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('$appName has been unblocked'),
+          backgroundColor: Colors.green,
+        ),
+      );
     } catch (e) {
       print('❌ Error unblocking app: $e');
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text('Failed to unblock $appName')));
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Failed to unblock $appName'),
+          backgroundColor: Colors.red,
+        ),
+      );
     }
   }
 
+  // NEW: Show dialog when trying to block/unblock from historical dates
+  void _showBlockingNotAllowedDialog() {
+    showDialog(
+      context: context,
+      builder:
+          (context) => AlertDialog(
+            title: Row(
+              children: [
+                Icon(Icons.warning, color: Colors.orange),
+                SizedBox(width: 8),
+                Text('Action Not Allowed'),
+              ],
+            ),
+            content: Text(
+              'You can only block or unblock apps for today\'s date. '
+              'Please switch to today\'s view to manage app blocking.',
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(context),
+                child: Text('OK'),
+              ),
+              ElevatedButton(
+                onPressed: () {
+                  Navigator.pop(context);
+                  _navigateToToday();
+                },
+                child: Text('Go to Today'),
+              ),
+            ],
+          ),
+    );
+  }
+
+  // NEW: Navigate to today's date
+  void _navigateToToday() {
+    final today = DateTime.now();
+    _navigateToDate(today);
+  }
+
+  // UPDATED: Modified _showBlockDialog to show warning for historical dates
   void _showBlockDialog(AppUsageStats app) {
+    if (!_isViewingToday) {
+      _showBlockingNotAllowedDialog();
+      return;
+    }
+
     showDialog(
       context: context,
       builder:
@@ -223,21 +319,27 @@ class _ChildActivityScreenState extends State<ChildActivityScreen>
                 Text('Choose how long to block ${app.appName}:'),
                 SizedBox(height: 16),
                 ListTile(
+                  leading: Icon(Icons.block, color: Colors.red),
                   title: Text('Until Manually Unblocked'),
+                  subtitle: Text('Block indefinitely'),
                   onTap: () {
                     _blockApp(app);
                     Navigator.pop(context);
                   },
                 ),
                 ListTile(
+                  leading: Icon(Icons.schedule, color: Colors.orange),
                   title: Text('For 1 Hour'),
+                  subtitle: Text('Temporary block'),
                   onTap: () {
                     _blockApp(app, duration: Duration(hours: 1));
                     Navigator.pop(context);
                   },
                 ),
                 ListTile(
+                  leading: Icon(Icons.schedule, color: Colors.orange),
                   title: Text('For 24 Hours'),
+                  subtitle: Text('Block for one day'),
                   onTap: () {
                     _blockApp(app, duration: Duration(hours: 24));
                     Navigator.pop(context);
@@ -672,6 +774,13 @@ class _ChildActivityScreenState extends State<ChildActivityScreen>
         backgroundColor: Colors.deepPurple,
         elevation: 0,
         actions: [
+          // NEW: Add today button if not viewing today
+          if (!_isViewingToday)
+            IconButton(
+              icon: Icon(Icons.today, color: Colors.white),
+              onPressed: _navigateToToday,
+              tooltip: 'Go to Today',
+            ),
           IconButton(
             icon: Icon(Icons.calendar_today, color: Colors.white),
             onPressed: _showDatePicker,
@@ -692,9 +801,30 @@ class _ChildActivityScreenState extends State<ChildActivityScreen>
           ),
         ],
         bottom: PreferredSize(
-          preferredSize: Size.fromHeight(100),
+          preferredSize: Size.fromHeight(
+            130,
+          ), // Increased height for info banner
           child: Column(
             children: [
+              // NEW: Add info banner for non-today views
+              if (!_isViewingToday)
+                Container(
+                  width: double.infinity,
+                  color: Colors.orange,
+                  padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                  child: Row(
+                    children: [
+                      Icon(Icons.info, color: Colors.white, size: 16),
+                      SizedBox(width: 8),
+                      Expanded(
+                        child: Text(
+                          'Viewing historical data. Switch to today to manage app blocking.',
+                          style: TextStyle(color: Colors.white, fontSize: 12),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
               Container(
                 padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                 child: Row(
@@ -1074,6 +1204,9 @@ class _ChildActivityScreenState extends State<ChildActivityScreen>
 
   Widget _buildAppUsageItem(AppUsageStats app) {
     final isBlocked = _blockedAppsCache.containsKey(app.packageName);
+    final canModifyBlock =
+        _isViewingToday; // Only allow blocking actions for today
+
     return Card(
       margin: EdgeInsets.only(bottom: 8),
       elevation: 2,
@@ -1093,12 +1226,32 @@ class _ChildActivityScreenState extends State<ChildActivityScreen>
             color: isBlocked ? Colors.red : Colors.black,
           ),
         ),
-        subtitle: Text(
-          'Package: ${app.packageName}${isBlocked ? '\nBlocked' : ''}',
-          style: TextStyle(
-            fontSize: 12,
-            color: isBlocked ? Colors.red : Colors.grey[600],
-          ),
+        subtitle: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'Package: ${app.packageName}',
+              style: TextStyle(fontSize: 12, color: Colors.grey[600]),
+            ),
+            if (isBlocked)
+              Text(
+                'Currently Blocked',
+                style: TextStyle(
+                  fontSize: 12,
+                  color: Colors.red,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            if (isBlocked && !canModifyBlock)
+              Text(
+                'Switch to today to manage blocking',
+                style: TextStyle(
+                  fontSize: 11,
+                  color: Colors.orange,
+                  fontStyle: FontStyle.italic,
+                ),
+              ),
+          ],
         ),
         trailing: Row(
           mainAxisSize: MainAxisSize.min,
@@ -1125,15 +1278,21 @@ class _ChildActivityScreenState extends State<ChildActivityScreen>
             IconButton(
               icon: Icon(
                 isBlocked ? Icons.lock_open : Icons.lock,
-                color: isBlocked ? Colors.green : Colors.red,
+                color:
+                    canModifyBlock
+                        ? (isBlocked ? Colors.green : Colors.red)
+                        : Colors.grey,
               ),
-              onPressed: () {
-                if (isBlocked) {
-                  _unblockApp(app.packageName, app.appName);
-                } else {
-                  _showBlockDialog(app);
-                }
-              },
+              onPressed:
+                  canModifyBlock
+                      ? () {
+                        if (isBlocked) {
+                          _unblockApp(app.packageName, app.appName);
+                        } else {
+                          _showBlockDialog(app);
+                        }
+                      }
+                      : () => _showBlockingNotAllowedDialog(),
             ),
           ],
         ),
