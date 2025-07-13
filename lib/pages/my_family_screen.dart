@@ -223,24 +223,30 @@ class _MyFamilyScreenState extends State<MyFamilyScreen> {
             itemCount: children.length,
             itemBuilder: (context, index) {
               final child = children[index];
+
+              // Get device name - try deviceName first, then appName as fallback
+              final deviceName =
+                  child['deviceName'] ?? child['appName'] ?? 'Unknown Device';
+
               return Card(
                 margin: const EdgeInsets.only(bottom: 12),
                 child: ListTile(
                   leading: CircleAvatar(
                     backgroundColor: const Color(0xFF4C5DF4),
-                    child: Text(
-                      child['name']?.substring(0, 1).toUpperCase() ?? 'C',
-                      style: const TextStyle(
-                        color: Colors.white,
-                        fontWeight: FontWeight.bold,
-                      ),
+                    child: Icon(
+                      Icons.phone_android,
+                      color: Colors.white,
+                      size: 20,
                     ),
                   ),
                   title: Text(
-                    child['name'] ?? 'Unknown',
+                    deviceName,
                     style: const TextStyle(fontWeight: FontWeight.bold),
                   ),
-                  subtitle: Text('Age: ${child['age'] ?? 'Not specified'}'),
+                  subtitle: Text(
+                    'Device ID: ${child['id']}',
+                    style: TextStyle(color: Colors.grey[600], fontSize: 12),
+                  ),
                   trailing: PopupMenuButton(
                     itemBuilder:
                         (context) => [
@@ -257,15 +263,12 @@ class _MyFamilyScreenState extends State<MyFamilyScreen> {
                         ],
                     onSelected: (value) {
                       if (value == 'view_activity') {
-                        _viewChildActivity(
-                          child['id'],
-                          child['name'] ?? 'Unknown',
-                        );
+                        _viewChildActivity(child['id'], deviceName);
                       }
                     },
                   ),
                   onTap: () {
-                    _viewChildActivity(child['id'], child['name'] ?? 'Unknown');
+                    _viewChildActivity(child['id'], deviceName);
                   },
                 ),
               );
@@ -304,13 +307,13 @@ class _MyFamilyScreenState extends State<MyFamilyScreen> {
     );
   }
 
-  Future<void> _viewChildActivity(String childId, String childName) async {
+  Future<void> _viewChildActivity(String childId, String deviceName) async {
     Navigator.push(
       context,
       MaterialPageRoute(
         builder:
             (context) =>
-                ChildActivityScreen(childId: childId, childName: childName),
+                ChildActivityScreen(childId: childId, childName: deviceName),
       ),
     );
   }
